@@ -46,12 +46,16 @@ export class Sheep{
     }
 
     animate(ctx, dots){
-        this.x = 650;
-        this.y = 550;
+        //this.x = 650;
+        this.x -= this.speed; // 양의 x값을 스테이지의 넓이에 양의 넓이를 더한 만큼. 왼쪽으로 이동하는 양
+        //this.y = 550;
+        const closest = this.getY(this.x, dots);
+        this.y = closest.y;
 
         ctx.save();
         ctx.translate(this.x, this.y);
-        ctx.fillStyle = '#000000';
+        ctx.rotate(closest.rotation);
+        // ctx.fillStyle = '#000000';
         ctx.drawImage(
             this.img,
             this.imgWidth * this.curFrame,
@@ -70,5 +74,53 @@ export class Sheep{
         //     this.sheepHeight
         // );
         ctx.restore();
+    }
+
+    getY(x, dots){
+        for (let i = 1; i < dots.length; i++){
+            if (x >= dots[i].x1 && x <= dots[i].x3){
+                return this.getY2(x, dots[i]);
+            }
+        }
+        return {
+            y:0,
+            rotation: 0
+        };
+    }
+
+    getY2(x, dots){
+        const total = 200; // 200개의 촘촘한 비율로 곡선을 나눔
+        let pt = this.getPointOnQuad(dot.x1, dot.y1, dot.x2, dot.y2, dot.x3, dot.y3, 0);
+        let prevX = pt.x;
+        for (let i = 1; i < total; i++){
+            const t = i / total;
+            pt = this.getPointOnQuad(dot.x1, dot.y1, dot.x2, dot.y2, dot.x3, dot.y3, t);
+
+            if (x >= prevX && x <= pt.x){
+                return pt;
+            }
+            prevX = pt.x;
+        }
+        return pt;
+    }
+
+    getQuadValue(p0, p1, p2, t){
+        return (1-t)*(1-t)*p0 + 2*(1-t)*t*p1 + t*t*p2;
+    }
+
+    getPointOnQuad(x1, y1, x2, y2, x3, y3, t){
+        const tx = this.quadTangent(x1, x2, x3, t);
+        const ty = this.quadTangent(y1, y2, y3, t);
+        const rotation = -Math.atan2(tx, ty) + (90*Math.PI / 180);
+        return {
+            x: this.getQuadValue(x1, x2, x3, t),
+            y: this.getQuadValue(y1, y2, y3, t),
+            rotation: rotation,
+        };
+    }
+
+    // 곡선에 대한 수직
+    quadTangent(a, b, c, t){
+        return 2*(1-t)*(b-a) + 2*(c-b)*t;
     }
 }
