@@ -17,7 +17,7 @@ export class Sheep{
         this.sheepWidthHalf = this.sheepWidth / 2;
         this.x = stageWidth + this.sheepWidth;
         this.y = 0;
-        this.speed = Math.random * 2 + 1;
+        this.speed = Math.random() * 2 + 1;
 
         this.fps = 24;
         this.fpsTime = 1000 / this.fps; // 실제 타임스탬프와 비교값
@@ -76,6 +76,7 @@ export class Sheep{
         ctx.restore();
     }
 
+    // 어떤 곡선이 x값에 해당하는지 확인하는 함수
     getY(x, dots){
         for (let i = 1; i < dots.length; i++){
             if (x >= dots[i].x1 && x <= dots[i].x3){
@@ -88,8 +89,8 @@ export class Sheep{
         };
     }
 
-    getY2(x, dots){
-        const total = 200; // 200개의 촘촘한 비율로 곡선을 나눔
+    getY2(x, dot){
+        const total = 200; // 비율t, 200개의 촘촘한 비율로 곡선을 나눔
         let pt = this.getPointOnQuad(dot.x1, dot.y1, dot.x2, dot.y2, dot.x3, dot.y3, 0);
         let prevX = pt.x;
         for (let i = 1; i < total; i++){
@@ -103,11 +104,11 @@ export class Sheep{
         }
         return pt;
     }
-
+    // Quadratic Bezier 일때 비율 t에 따른 좌표를 찾는 공식
     getQuadValue(p0, p1, p2, t){
         return (1-t)*(1-t)*p0 + 2*(1-t)*t*p1 + t*t*p2;
     }
-
+    //언덕위에 내가 원하는 좌표를 찾아야 한다
     getPointOnQuad(x1, y1, x2, y2, x3, y3, t){
         const tx = this.quadTangent(x1, x2, x3, t);
         const ty = this.quadTangent(y1, y2, y3, t);
